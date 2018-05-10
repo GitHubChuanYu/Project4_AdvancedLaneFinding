@@ -105,13 +105,15 @@ I verified that my perspective transform was working as expected by drawing the 
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+After getting my threholded warped image, I use the "Peaks in a Histogram" method to find the lanes. Specifically, I first take a histogram along all the columns in the lower half of the image. Then I am using a sliding window method to search for lines where the most pixels in binary image locate. The left and right lane search bases are the two peaks in histogram. After all the good pixel points are identified for left and right line, then I use the `np.polyfit` function to fit a polynomial along those points. All the code for this part are in the 8th code cell of the IPython notebook [Project4Pipeline_simplified.ipynb](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/Project4Pipeline_simplified.ipynb).
+
+ One example result for [test2.jpg](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/test_images/test2.jpg) is shown here:
 
 ![alt text][image5]
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
