@@ -20,9 +20,9 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 
 [image1]: ./output_images/calibration15.jpg "ChessboardWithCorners"
-[image2]: ./test_images/test1.jpg "Road Transformed"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
+[image2]: ./output_images/undistort.jpg "Undistort effect"
+[image3]: ./output_images/test2_thresheld.jpg "Binary Example"
+[image4]: ./output_images/straightlinelane_PT_1.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./project_video.mp4 "Video"
@@ -49,50 +49,57 @@ I start by preparing "object points", which will be the (x, y, z) coordinates of
 
 ![alt text][image1]
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image test4.jpg using the `cv2.undistort()` function and obtained this result: 
 
 ![alt text][image2]
 
 ### Pipeline (single images)
 
-#### 1. Provide an example of a distortion-corrected image.
+#### 1. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+I used a combination of L channel in HLS color space and B channel in LAB color space thresholds to generate a binary image. The code is shown as:
 
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+```python
+binary_H = HLS_Hthresh(undistorted, thresh=(10,100))
+binary_S = HLS_Sthresh(undistorted, thresh=(170,255))
+binary_L = HLS_Lthresh(undistorted, thresh=(220,255))
+binary_B = LAB_Bthresh(undistorted, thresh=(155,255))
+gradx = abs_sobel_thresh(undistorted, orient='x', sobel_kernel=3, thresh=(15, 100))
+combined_binary = np.zeros_like(binary_L)
+combined_binary[(binary_L == 1) | (binary_B == 1)] = 1
+```
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+Here's an example of my output from [test2.jpg](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/test_images/test2.jpg) for this step.
 
 ![alt text][image3]
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+The code for my perspective transform includes a function called `warp()`, which appears in the 7th code cell of the IPython notebook [Project4Pipeline_simplified.ipynb](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/Project4Pipeline_simplified.ipynb).  The `warp()` function takes as inputs an image (`img`), and the source (`src`) and destination (`dst`) points are calculated inside the function.  I chose the hardcode the source and destination points in the following manner:
 
 ```python
 src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
+    [[576.651, 462.127],
+    [235.583, 700.472],
+    [1066.41, 700.42],
+    [707.714, 462.127]])
 dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
+    [[(img_size[0] / 4) - 70, 0],
+    [(img_size[0] / 4) - 70, img_size[1]],
+    [(img_size[0] * 3 / 4) + 70, img_size[1]],
+    [(img_size[0] * 3 / 4) + 70, 0]])
 ```
 
 This resulted in the following source and destination points:
 
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+| 577, 462      | 250, 0        | 
+| 236, 700      | 250, 720      |
+| 1066, 700     | 1030, 720      |
+| 708, 462      | 1030, 0        |
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image with relatively straight line lane [straight_lines2.jpg](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/test_images/straight_lines2.jpg) and its warped counterpart to verify that the lines appear parallel in the warped image.
 
 ![alt text][image4]
 
