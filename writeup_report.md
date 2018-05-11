@@ -46,7 +46,7 @@ You're reading it!
 
 #### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
-The code for this step is contained in the second and third code cell of the IPython notebook located in "Project4Pipeline_simplified.ipynb".  
+The code for this step is contained in the 2nd and 3rd code cell of the IPython notebook located in [Project4Pipeline_simplified.ipynb](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/Project4Pipeline_simplified.ipynb).  
 
 I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  An example image showing original chessboard image with img points on it is:
 
@@ -161,4 +161,4 @@ After analyzing it, I think the main reason is there are a lot of noisy pixels (
 
 However, I think my current method could also have some limitation due to strong capability of filtering noisy pixels, for example if one of the lanes is very small and dark, then it would also be filtered and then the problem is this lane is not detected.
 
-I think to increase robustness of my current lane finding pipeline, I can implement the look-ahead filter which can utilize the previous lane finding polynomial to increase robustness of adjacent future image. But due to limited time and capability on Python coding, I have not tried that implementation.
+I think to increase robustness of my current lane finding pipeline, I can implement the look-ahead filter which can utilize the previous lane finding polynomial to increase lane finding robustness of adjacent future image. But due to limited time and capability on Python coding, I have not tried that implementation.
