@@ -23,9 +23,12 @@ The goals / steps of this project are the following:
 [image2]: ./output_images/undistort.jpg "Undistort effect"
 [image3]: ./output_images/test2_thresheld.jpg "Binary Example"
 [image4]: ./output_images/straightlinelane_PT_1.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[image5]: ./output_images/test2_lanefinding.jpg "Fit Visual"
+[image6]: ./output_images/lane_remap.jpg "Output"
+[image7]: ./mess1.jpg "mess"
+[image8]: ./mess2.jpg "mess"
+[image9]: ./mess3.jpg "mess"
+[image10]: ./mess4.jpg "mess"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -113,11 +116,20 @@ After getting my threholded warped image, I use the "Peaks in a Histogram" metho
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
+Since I get the polynomial fit for the left and right lane, we can use that to calculate the radius of curvature based on the equation of radius of curvature. Here I calculate the curve radius at the bottom point of left and right lane line since it is closest to the vehicle. After I get the radius of curvature for left and right lane, I take average of them to get the curve radius of the lane. Then the last step is to convert the pixel curve radius into real curve radius in meter, this is based on the conversions in x and y from pixels space to meters:
 
+`
+ym_per_pix = 30/720
+xm_per_pix =3.7/700
+`
+
+For the position of the vehicle with respect to lane center, I assume the center of the vehicle is the same of the center of camera image and the lane center is the midpoint at the bottom of the image between left and right lane lines. The different between image center the midpoint of left and right lane line is the vehicle position with respect to lane center. If the offset of vehicle center minus lane center is position then it is identified as right side from lane center, otherwise it is identified as on left side of lane center.
+
+The code for this part is covered in the last part of 8th code cell in the IPython notebook [Project4Pipeline_simplified.ipynb](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/Project4Pipeline_simplified.ipynb).
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I implemented this step in 9th code cell of the IPython notebook [Project4Pipeline_simplified.ipynb](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/Project4Pipeline_simplified.ipynb) in the function `lane_drawing()`.  Here is an example of my result on a [test2.jpg](https://github.com/GitHubChuanYu/Project4_AdvancedLaneFinding/blob/master/test_images/test2.jpg) image:
 
 ![alt text][image6]
 
@@ -127,7 +139,7 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
@@ -135,4 +147,18 @@ Here's a [link to my video result](./project_video.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+One interesting problem I have faced in my implementation is when I use this color and gradient threshold combination:
+`combined_binary[((binary_H == 1) & (binary_S == 1)) | (gradx == 1)] = 1`
+
+for a specific image in the video when the lane change from white paved to dark paved. Then the result is totally messed up like what I have shown here:
+
+![alt text][image7]
+![alt text][image8]
+![alt text][image9]
+![alt text][image10]
+
+After analyzing it, I think the main reason is there are a lot of noisy pixels (from gradient part) between left and right lane due to the road brightness change from light to dark. And the histogram shows that the peak for right lane bottom point is misdetected. So the right lane fitting polynomial is messed up for right lane. This could be improved by setting the histogram to include all the whole image instead of bottom half for peak points. However I have tried that and it turns that that it solved this problem but cause another misdection of peak point due the noisy pixel on top part of the image. So finally I use the current combined threshold method which is purely color threhold comination of L(HLS) and B(LAB). It can filter a lot of noisy pixels between left and right lane.
+
+However, I think my current method could also have some limitation due to strong capability of filtering noisy pixels, for example if one of the lanes is very small and dark, then it would also be filtered and then the problem is this lane is not detected.
+
+I think to increase robustness of my current lane finding pipeline, I can implement the look-ahead filter which can utilize the previous lane finding polynomial to increase robustness of adjacent future image. But due to limited time and capability on Python coding, I have not tried that implementation.
